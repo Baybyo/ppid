@@ -1,69 +1,140 @@
-# CodeIgniter 4 Application Starter
+# Layanan PPID Online — Dinas Tenaga Kerja dan Transmigrasi (Disnakertrans)
 
-## What is CodeIgniter?
+Sistem Informasi Pelayanan Permohonan Informasi Publik (PPID) berbasis web yang dikembangkan untuk mematuhi **Undang-Undang Nomor 14 Tahun 2008 tentang Keterbukaan Informasi Publik (KIP)**. Sistem ini berfungsi sebagai portal satu pintu (*single window service*) untuk pengajuan, pelacakan, dan pengelolaan dokumen permohonan informasi secara transparan dan akuntabel.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+---
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+## 🛠️ Stack Teknologi
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+| Komponen | Teknologi | Versi |
+| :--- | :--- | :--- |
+| **Framework** | CodeIgniter | 4.7+ |
+| **Bahasa** | PHP | 8.2+ |
+| **Database** | MySQL / MariaDB | 10.4+ |
+| **PDF Generator** | Dompdf | 3.1+ |
+| **Antarmuka** | Bootstrap 5 | 5.3+ |
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+---
 
-## Installation & updates
+## 📋 Fitur Utama
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+### 1. Sisi Pemohon (Masyarakat)
+- **Drafting Mandiri**: Pengguna dapat menyimpan draf permohonan sebelum dikirim secara resmi.
+- **Tanda Bukti Digital**: Penerbitan bukti registrasi berformat PDF otomatis lengkap dengan nomor unik.
+- **Pelacakan Status (*Public Tracking*)**: Pantau tahapan permohonan secara real-time tanpa harus login.
+- **Riwayat & Unduh Jawaban**: Akses riwayat pengajuan dan unduh dokumen tanggapan resmi dari instansi.
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+### 2. Sisi Administrator (Verifikator)
+- **Dashboard Terpadu**: Monitoring jumlah permohonan masuk, diproses, selesai, dan ditolak.
+- **Manajemen SLA**: Perhitungan otomatis batas waktu layanan (SLA standar 10 hari kerja + perpanjangan 7 hari kerja).
+- **Verifikasi & Tanggapan**: Validasi identitas pemohon, pembaruan status berjenjang, dan unggah berkas jawaban.
+- **Jejak Audit (*Audit Trail*)**: Pencatatan log aktivitas dan alamat IP setiap perubahan status demi akuntabilitas hukum.
 
-## Setup
+---
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+## ⚙️ Persyaratan Sistem
 
-## Important Change with index.php
+Sebelum melakukan instalasi, pastikan server atau lingkungan lokal Anda memenuhi spesifikasi berikut:
+- **PHP** >= 8.2 dengan ekstensi aktif:
+  - `intl`
+  - `mbstring`
+  - `mysqli`
+  - `gd`
+  - `curl`
+  - `json`
+- **Composer** (Package Manager untuk PHP)
+- **Web Server** (Apache / Nginx / PHP Built-in Server)
+- **MySQL** atau **MariaDB**
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+---
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+## 🚀 Panduan Instalasi (Development Setup)
 
-**Please** read the user guide for a better explanation of how CI4 works!
+Ikuti langkah-langkah berikut untuk menjalankan proyek di perangkat lokal:
 
-## Repository Management
+### 1. Kloning Repositori
+```bash
+git clone https://github.com/Baybyo/ppid.git
+cd ppid
+```
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+### 2. Install Dependensi PHP
+```bash
+composer install
+```
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+### 3. Konfigurasi Environment (`.env`)
+Salin file bawaan `env` menjadi `.env`:
+```bash
+cp env .env
+```
+Buka file `.env` dan sesuaikan konfigurasi dasar berikut:
+```ini
+CI_ENVIRONMENT = development
 
-## Server Requirements
+app.baseURL = 'http://localhost/ppid/public/'
 
-PHP version 8.2 or higher is required, with the following extensions installed:
+database.default.hostname = localhost
+database.default.database = ppid_db
+database.default.username = root
+database.default.password = 
+database.default.DBDriver = MySQLi
+database.default.port = 3306
+```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+### 4. Konfigurasi Database
+Buat database baru di MySQL dengan nama `ppid_db`, lalu jalankan migrasi dan seeder untuk tabel serta akun admin default:
+```bash
+php spark migrate --all
+php spark db:seed DatabaseSeeder
+```
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - The end of life date for PHP 8.1 was December 31, 2025.
-> - If you are still using below PHP 8.2, you should upgrade immediately.
-> - The end of life date for PHP 8.2 will be December 31, 2026.
+### 5. Pengaturan Hak Akses Folder (Linux/macOS)
+Pastikan folder `writable` memiliki izin tulis:
+```bash
+chmod -R 777 writable/
+```
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+### 6. Jalankan Aplikasi
+Anda dapat menggunakan server bawaan PHP Spark:
+```bash
+php spark serve
+```
+Akses aplikasi melalui browser di `http://localhost:8080`.
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+*(Alternatif: Arahkan Document Root web server lokal/XAMPP Anda langsung ke folder `/public` proyek ini).*
+
+---
+
+## 🔑 Kredensial Akses Default
+
+Setelah menjalankan `DatabaseSeeder`, akun administrator bawaan akan tersedia:
+- **URL Login Admin**: `http://localhost:8080/admin/login` (atau sesuai `baseURL`)
+- **Username**: `admin`
+- **Password**: `admin123`
+
+*(Harap segera mengganti kredensial default ini apabila diaplikasikan pada lingkungan produksi).*
+
+---
+
+## 🔍 Alur Status Permohonan
+
+```text
+[ Draft ] ──> [ Menunggu Verifikasi ] ──> [ Diproses ] ──> [ Selesai / Ditolak ]
+```
+
+---
+
+## 🧩 Penanganan Masalah Umum (Troubleshooting)
+
+| Kendala | Penyebab Umum | Solusi |
+| :--- | :--- | :--- |
+| **Class "Dompdf\Dompdf" not found** | Dependensi belum terunduh | Jalankan `composer install` di root proyek. |
+| **Database Connection Error** | Koneksi `.env` salah atau DB belum ada | Buat database dan periksa baris `database.default.*` di `.env`. |
+| **Error 404 pada Halaman Tertentu** | Modul rewrite Apache belum aktif | Pastikan `mod_rewrite` aktif atau gunakan `php spark serve`. |
+| **Gagal Mengunggah Berkas / Log Error** | Folder `writable/` tidak writable | Jalankan perintah `chmod -R 777 writable/`. |
+
+---
+
+## 📄 Lisensi
+Proyek ini dilisensikan di bawah [MIT License](LICENSE).
