@@ -69,6 +69,7 @@ function deleteDraft(id, btn) {
   btn.disabled = true;
   fetch('<?= site_url('permohonan/delete-draft/') ?>' + id, {
     method: 'POST',
+    credentials: 'same-origin',
     headers: { 'X-CSRF-TOKEN': CSRF_TOKEN_VALUE, 'X-Requested-With': 'XMLHttpRequest' }
   }).then(r => r.json()).then(d => {
     if (d.status) {

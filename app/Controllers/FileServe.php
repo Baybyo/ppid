@@ -38,12 +38,16 @@ class FileServe extends BaseController
         }
 
         $filePath = FCPATH . $lampiran['path_file'];
-        if (!file_exists($filePath)) {
+        $realPath = realpath($filePath);
+        if ($realPath === false || strpos($realPath, realpath(FCPATH)) !== 0) {
+            return $this->response->setStatusCode(403)->setBody('Akses ditolak.');
+        }
+        if (!file_exists($realPath)) {
             return $this->response->setStatusCode(404)->setBody('File tidak ditemukan di server.');
         }
 
         $mime = $lampiran['mime_type'] ?: mime_content_type($filePath);
-        $name = $lampiran['nama_file'] ?? basename($filePath);
+        $name = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $lampiran['nama_file'] ?? basename($filePath));
 
         return $this->response
             ->setHeader('Content-Type', $mime)

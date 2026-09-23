@@ -48,6 +48,8 @@ $routes->group('admin', ['filter' => 'adminAuth'], static function (RouteCollect
         $routes->get('/', 'Admin\Masyarakat::index');
         $routes->get('detail/(:num)', 'Admin\Masyarakat::detail/$1');
         $routes->post('toggle-status/(:num)', 'Admin\Masyarakat::toggleStatus/$1');
+        $routes->post('update/(:num)', 'Admin\Masyarakat::update/$1');
+        $routes->post('delete/(:num)', 'Admin\Masyarakat::delete/$1');
     });
     $routes->get('profil', 'Admin\Profil::index');
     $routes->post('profil/update', 'Admin\Profil::update');

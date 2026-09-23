@@ -6,6 +6,7 @@ use App\Models\PermohonanModel;
 use App\Models\PermohonanLampiranModel;
 use App\Models\PermohonanTahapanModel;
 use App\Models\PermohonanLogModel;
+use App\Models\MasyarakatModel;
 
 class Permohonan extends BaseController
 {
@@ -39,6 +40,16 @@ class Permohonan extends BaseController
 
         $ext  = strtolower($file->getExtension());
         $mime = $file->getMimeType();
+        $validExt  = ['pdf', 'jpg', 'jpeg', 'png'];
+        $validMime = ['image/jpeg', 'image/png', 'application/pdf'];
+
+        if (!in_array($ext, $validExt, true) || !in_array($mime, $validMime, true)) {
+            return null;
+        }
+        if ($file->getSizeByUnit('mb') > 10) {
+            return null;
+        }
+
         $size = $file->getSizeByUnit('kb');
         $orig = $file->getClientName();
         $newName = 'permohonan_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
@@ -63,9 +74,22 @@ class Permohonan extends BaseController
     {
         if ($guard = $this->requireLogin()) return $guard;
 
+        $existing = null;
+        $id = (int) $this->request->getGet('id');
+        if ($id > 0) {
+            $row = $this->permohonanModel->find($id);
+            if ($row && (int) $row['masyarakat_id'] === (int) session()->get('masyarakatId') && (int) $row['status'] === 0) {
+                $existing = $row;
+            }
+        }
+
+        $masyarakatModel = new MasyarakatModel();
+        $user = $masyarakatModel->find((int) session()->get('masyarakatId'));
+
         return view('permohonan/form', [
             'title'    => 'Formulir Permohonan Informasi Publik',
-            'existing' => null,
+            'existing' => $existing,
+            'user'     => $user,
         ]);
     }
 
@@ -86,6 +110,7 @@ class Permohonan extends BaseController
             return $this->response->setJSON(['status' => false, 'message' => 'Data sudah dikirim dan tidak bisa diedit.'])->setStatusCode(403);
         }
 
+        $now = date('Y-m-d H:i:s');
         $data = [
             'masyarakat_id'        => session()->get('masyarakatId'),
             'nama_pemohon'         => $this->request->getPost('nama_pemohon') ?: ($existing['nama_pemohon'] ?? ''),
@@ -101,14 +126,22 @@ class Permohonan extends BaseController
             'cara_salinan'         => $this->arrayToJSON($this->request->getPost('cara_salinan')) ?: ($existing['cara_salinan'] ?? '[]'),
             'cara_salinan_lainnya' => $this->request->getPost('cara_salinan_lainnya') ?: ($existing['cara_salinan_lainnya'] ?? null),
             'status'               => 0,
-            'updated_at'           => date('Y-m-d H:i:s'),
+            'updated_at'           => $now,
+            'created_at'           => $existing['created_at'] ?? $now,
         ];
 
         $file = $this->request->getFile('file_identitas');
         if ($file && $file->isValid() && !$file->hasMoved()) {
-            $up = $this->handleUpload($file);
-            if ($up) {
-                $data['file_identitas'] = $up['path'];
+            $ext  = strtolower($file->getExtension());
+            $mime = $file->getMimeType();
+            $validExt  = ['pdf', 'jpg', 'jpeg', 'png'];
+            $validMime = ['image/jpeg', 'image/png', 'application/pdf'];
+
+            if (in_array($ext, $validExt, true) && in_array($mime, $validMime, true) && $file->getSizeByUnit('mb') <= 10) {
+                $up = $this->handleUpload($file);
+                if ($up) {
+                    $data['file_identitas'] = $up['path'];
+                }
             }
         }
 
@@ -143,10 +176,13 @@ class Permohonan extends BaseController
             return $this->response->setJSON(['status' => false, 'message' => 'Data sudah dikirim sebelumnya.'])->setStatusCode(403);
         }
 
-        // Validation ketat sesuai Sesi 06
+        // Validation ketat sesuai Sesi 06 & aturan KTP 16 digit
+        $jenisIdentitas = $this->request->getPost('jenis_identitas');
+        $identitasRule = ($jenisIdentitas === 'KTP') ? 'required|exact_length[16]|numeric' : 'required|min_length[8]|max_length[20]|alpha_numeric';
+
         $rules = [
             'nama_pemohon'      => 'required|min_length[3]|max_length[100]|regex_match[/^[a-zA-Z\s.\'-]+$/]',
-            'no_identitas'      => 'required|min_length[8]|max_length[20]|alpha_numeric',
+            'no_identitas'      => $identitasRule,
             'jenis_identitas'   => 'required|in_list[KTP,SIM,Paspor]',
             'pekerjaan'         => 'required|min_length[2]|max_length[50]',
             'alamat'            => 'required|min_length[10]|max_length[500]',
@@ -184,7 +220,7 @@ class Permohonan extends BaseController
             return redirect()->back()->withInput()->with('error', $msg);
         }
 
-        if (in_array('Lainnya', $caraSalinan, true)) {
+        if (in_array('Yang Lain', $caraSalinan, true)) {
             $lainnya = trim((string) $this->request->getPost('cara_salinan_lainnya'));
             if (empty($lainnya) || strlen($lainnya) < 3 || strlen($lainnya) > 100) {
                 $msg = 'Detail "Lainnya" wajib diisi 3-100 karakter.';
@@ -245,9 +281,17 @@ class Permohonan extends BaseController
             'sla_deadline'         => $sla['deadline'],
             'submitted_at'         => $submittedAt,
             'updated_at'           => $submittedAt,
+            'created_at'           => $existing['created_at'] ?? $submittedAt,
         ];
 
+        $fileOrigName = null;
+        $fileMime     = null;
+        $fileSize     = 0;
+
         if ($file && $file->isValid() && !$file->hasMoved()) {
+            $fileOrigName = $file->getClientName();
+            $fileMime     = $file->getMimeType();
+            $fileSize     = (int) $file->getSizeByUnit('kb');
             $up = $this->handleUpload($file);
             if ($up) {
                 $data['file_identitas'] = $up['path'];
@@ -261,13 +305,42 @@ class Permohonan extends BaseController
             $permId = $this->permohonanModel->insert($data, true);
         }
 
+        if (!empty($data['file_identitas'])) {
+            $existingIdentitas = $this->lampiranModel->where('permohonan_id', $permId)->where('tipe', 'identitas')->first();
+            if (!$existingIdentitas) {
+                $origName = $fileOrigName ?? basename($data['file_identitas']);
+                $this->lampiranModel->insert([
+                    'permohonan_id' => $permId,
+                    'tipe'          => 'identitas',
+                    'nama_file'     => $origName,
+                    'path_file'     => $data['file_identitas'],
+                    'mime_type'     => $fileMime ?: 'application/octet-stream',
+                    'ukuran_kb'     => $fileSize,
+                    'created_at'    => date('Y-m-d H:i:s'),
+                ]);
+            }
+        } elseif ($existing && !empty($existing['file_identitas'])) {
+            $existingIdentitas = $this->lampiranModel->where('permohonan_id', $permId)->where('tipe', 'identitas')->first();
+            if (!$existingIdentitas) {
+                $this->lampiranModel->insert([
+                    'permohonan_id' => $permId,
+                    'tipe'          => 'identitas',
+                    'nama_file'     => basename($existing['file_identitas']),
+                    'path_file'     => $existing['file_identitas'],
+                    'mime_type'     => 'application/octet-stream',
+                    'ukuran_kb'     => 0,
+                    'created_at'    => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
+
         // Init tahapan + log
         $this->tahapanModel->initTahapan($permId);
         $this->logModel->logTransition(
             $permId,
             null,
             'Permohonan dikirim oleh pemohon',
-            $existing['status'] ?? '0',
+            $existing ? ($existing['status'] ?? '0') : '0',
             '1'
         );
 
@@ -282,6 +355,22 @@ class Permohonan extends BaseController
 
         return redirect()->to(site_url('permohonan/success/' . $noRegistrasiData['no_registrasi']));
     }
+
+
+    private function calculateWorkingDays(string $startDate, int $days): string
+    {
+        $date = new \DateTime($startDate);
+        $added = 0;
+        while ($added < $days) {
+            $date->modify('+1 day');
+            $dayOfWeek = (int) $date->format('N');
+            if ($dayOfWeek < 6) {
+                $added++;
+            }
+        }
+        return $date->format('Y-m-d');
+    }
+
 
     public function success(string $noRegistrasi)
     {
@@ -372,6 +461,8 @@ class Permohonan extends BaseController
         $nik = $row['no_identitas'] ?? '';
         $maskedNik = strlen($nik) > 4 ? str_repeat('*', strlen($nik) - 4) . substr($nik, -4) : '****';
 
+        $statusMap = [0 => 'Draft', 1 => 'Menunggu Verifikasi', 2 => 'Diproses', 3 => 'Selesai', 4 => 'Ditolak'];
+
         $html = '<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
 body { font-family: sans-serif; font-size: 12px; color: #1f2a44; }
@@ -399,7 +490,7 @@ th { background: #f4f6fb; width: 180px; font-weight: 600; }
 <tr><th>Rincian Informasi</th><td>' . esc($row['rincian_informasi']) . '</td></tr>
 <tr><th>Tujuan Penggunaan</th><td>' . esc($row['tujuan_penggunaan']) . '</td></tr>
 <tr><th>Tanggal Pengajuan</th><td>' . esc($row['submitted_at'] ?? $row['created_at']) . '</td></tr>
-<tr><th>Status</th><td>Menunggu Verifikasi</td></tr>
+<tr><th>Status</th><td>' . ($statusMap[(int)($row['status'] ?? 0)] ?? '-') . '</td></tr>
 </table>
 <div class="footer">Dicetak pada: ' . date('d M Y H:i') . '</div>
 </body></html>';
@@ -429,8 +520,28 @@ th { background: #f4f6fb; width: 180px; font-weight: 600; }
             return $this->response->setJSON(['status' => false, 'message' => 'Hanya draft yang bisa dihapus.'])->setStatusCode(403);
         }
 
+        $this->deleteAssociatedFiles($id);
         $this->permohonanModel->delete($id);
         return $this->response->setJSON(['status' => true, 'message' => 'Draft berhasil dihapus.']);
+    }
+
+    private function deleteAssociatedFiles(int $permohonanId): void
+    {
+        $lampiranList = $this->lampiranModel->getByPermohonan($permohonanId);
+        foreach ($lampiranList as $lamp) {
+            $path = FCPATH . $lamp['path_file'];
+            if (!empty($lamp['path_file']) && file_exists($path)) {
+                unlink($path);
+            }
+        }
+
+        $row = $this->permohonanModel->find($permohonanId);
+        if ($row && !empty($row['file_identitas'])) {
+            $path = FCPATH . $row['file_identitas'];
+            if (file_exists($path)) {
+                unlink($path);
+            }
+        }
     }
 
     // ─── TRACKING (PUBLIK) ──────────────────────────────
@@ -473,7 +584,7 @@ th { background: #f4f6fb; width: 180px; font-weight: 600; }
                 'submitted_at'       => $row['submitted_at'],
                 'nik_masked'         => $maskedNik,
                 'telp_masked'        => $maskedTelp,
-                'rincian_informasi'  => mb_strimwidth($row['rincian_informasi'], 0, 100, '...'),
+                'rincian_informasi'  => mb_strimwidth($row['rincian_informasi'], 0, 50, '...'),
                 'alasan_penolakan'   => $row['alasan_penolakan'],
             ],
             'logs' => $logs,

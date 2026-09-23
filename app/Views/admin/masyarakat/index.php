@@ -17,7 +17,7 @@
           <th>Email</th>
           <th style="width:90px;text-align:center;">Status</th>
           <th style="width:100px;">Terdaftar</th>
-          <th style="width:70px;text-align:center;">Aksi</th>
+          <th style="width:130px;text-align:center;">Aksi</th>
         </tr>
       </thead>
       <tbody>
@@ -28,9 +28,9 @@
               <div style="display:flex;align-items:center;gap:.6rem;">
                 <div class="user-avatar" style="width:32px;height:32px;font-size:.65rem;flex-shrink:0;"><?= esc(strtoupper(substr($u['nama'], 0, 2))) ?></div>
                 <div>
-                  <div style="font-weight:600;font-size:.84rem;"><?= esc($u['nama']) ?></div>
+                  <a href="<?= site_url('admin/masyarakat/detail/' . $u['id']) ?>" style="font-weight:600;font-size:.84rem;text-decoration:none;color:var(--blue-600);"><?= esc($u['nama']) ?></a>
                   <?php if (!empty($u['nisn'])): ?>
-                    <div style="font-size:.72rem;color:var(--n-400);">NISN: <?= esc($u['nisn']) ?></div>
+                    <div style="font-size:.72rem;color:var(--n-400);">No ID: <?= esc($u['nisn']) ?></div>
                   <?php endif; ?>
                 </div>
               </div>
@@ -44,9 +44,16 @@
             </td>
             <td style="color:var(--n-400);font-size:.82rem;"><?= date('d M Y', strtotime($u['created_at'])) ?></td>
             <td style="text-align:center;">
-              <button onclick="toggleStatus(<?= $u['id'] ?>)" class="btn btn-sm <?= (int)$u['is_active'] === 1 ? 'btn-danger' : 'btn-success' ?>" id="btn-<?= $u['id'] ?>" title="<?= (int)$u['is_active'] === 1 ? 'Nonaktifkan' : 'Aktifkan' ?>">
-                <i class="bi bi-<?= (int)$u['is_active'] === 1 ? 'lock' : 'unlock' ?>"></i>
-              </button>
+              <div style="display:flex;gap:.25rem;justify-content:center;">
+                <a href="<?= site_url('admin/masyarakat/detail/' . $u['id']) ?>" class="btn btn-sm btn-outline" title="Kelola / Edit"><i class="bi bi-pencil-square"></i></a>
+                <button onclick="toggleStatus(<?= $u['id'] ?>)" class="btn btn-sm <?= (int)$u['is_active'] === 1 ? 'btn-danger' : 'btn-success' ?>" id="btn-<?= $u['id'] ?>" title="<?= (int)$u['is_active'] === 1 ? 'Nonaktifkan' : 'Aktifkan' ?>">
+                  <i class="bi bi-<?= (int)$u['is_active'] === 1 ? 'lock' : 'unlock' ?>"></i>
+                </button>
+                <form action="<?= site_url('admin/masyarakat/delete/' . $u['id']) ?>" method="POST" style="display:inline;" onsubmit="return confirm('Hapus akun <?= esc($u['nama'], 'js') ?> permanen?');">
+                  <?= csrf_field() ?>
+                  <button type="submit" class="btn btn-sm btn-outline" style="color:var(--red-600);border-color:var(--red-200);" title="Hapus"><i class="bi bi-trash3"></i></button>
+                </form>
+              </div>
             </td>
           </tr>
         <?php endforeach; ?>
@@ -63,7 +70,8 @@ $(function() {
   $('#tableMasyarakat').DataTable(
     $.extend({}, DATATABLE_DEFAULTS, {
       order: [],
-      columnDefs: [{ orderable: false, targets: [6] }]
+      columnDefs: [{ orderable: false, targets: [6] }],
+      language: { emptyTable: 'Tidak ada data masyarakat.' }
     })
   );
 });
@@ -81,6 +89,7 @@ async function toggleStatus(id) {
     const res = await fetch('<?= site_url('admin/masyarakat/toggle-status/') ?>' + id, {
       method: 'POST',
       body: fd,
+      credentials: 'same-origin',
       headers: { 'X-Requested-With': 'XMLHttpRequest' }
     });
     const j = await res.json();

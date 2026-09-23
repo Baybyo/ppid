@@ -45,16 +45,18 @@ class Profil extends BaseController
             'nama'   => 'required|min_length[3]',
             'email'  => "permit_empty|valid_email|is_unique[masyarakat.email,id,{$userId}]",
             'no_hp'  => "required|is_unique[masyarakat.no_hp,id,{$userId}]",
+            'nisn'   => "permit_empty|is_unique[masyarakat.nisn,id,{$userId}]",
         ];
 
         if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', 'Data tidak valid. Silakan periksa kembali.');
+            return redirect()->back()->withInput()->with('error', 'Data tidak valid atau No. Identitas sudah digunakan akun lain.');
         }
 
         $data = [
             'nama'  => $this->request->getPost('nama'),
             'email' => $this->request->getPost('email') ?: null,
             'no_hp' => $this->request->getPost('no_hp'),
+            'nisn'  => trim((string) $this->request->getPost('nisn')) ?: null,
         ];
 
         $this->masyarakatModel->update($userId, $data);
@@ -80,12 +82,13 @@ class Profil extends BaseController
         $userId = session()->get('masyarakatId');
         $rules = [
             'password_lama'     => 'required',
-            'password_baru'     => 'required|min_length[6]',
+            'password_baru'     => 'required|min_length[8]|regex_match[/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/]',
             'konfirmasi_password' => 'required|matches[password_baru]',
         ];
 
         if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', 'Gagal mengganti password. Silakan periksa kembali.');
+            $errors = implode(' ', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('error', 'Gagal mengganti password: ' . $errors);
         }
 
         $user = $this->masyarakatModel->find($userId);

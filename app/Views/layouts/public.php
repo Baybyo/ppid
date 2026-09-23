@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><?= esc($title ?? 'PPID') ?> — Dinas Tenaga Kerja Provinsi Jawa Timur</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.0') ?>">
 </head>
@@ -16,7 +17,10 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="brand-logo">
-        <img src="<?= base_url('assets/images/logo-jatim.png') ?>" alt="Logo Jatim" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <picture>
+          <source srcset="<?= base_url('assets/images/logo-jatim.webp') ?>" type="image/webp">
+          <img src="<?= base_url('assets/images/logo-jatim.png') ?>" alt="Logo Jatim" width="38" height="53" onerror="this.style.display='none';this.parentElement.nextElementSibling.style.display='flex'">
+        </picture>
         <div class="brand-fallback" style="display:none;"><i class="bi bi-shield-lock-fill"></i></div>
       </div>
       <div class="brand-text">
@@ -50,9 +54,6 @@
         <a href="<?= site_url('profil') ?>" class="sidebar-link <?= str_starts_with(uri_string(), 'profil') ? 'active' : '' ?>">
           <i class="bi bi-person-gear"></i> Profil Saya
         </a>
-        <a href="<?= site_url('permohonan/riwayat') ?>" class="sidebar-link">
-          <i class="bi bi-clock-history"></i> Riwayat
-        </a>
         <div class="sidebar-divider"></div>
         <a href="<?= site_url('logout') ?>" class="sidebar-link">
           <i class="bi bi-box-arrow-right"></i> Keluar
@@ -75,7 +76,10 @@
           <i class="bi bi-list"></i>
         </button>
         <div class="topbar-logo">
-          <img src="<?= base_url('assets/images/logo-jatim.png') ?>" alt="Logo Jatim" onerror="this.style.display='none'">
+          <picture>
+            <source srcset="<?= base_url('assets/images/logo-jatim.webp') ?>" type="image/webp">
+            <img src="<?= base_url('assets/images/logo-jatim.png') ?>" alt="Logo Jatim" width="34" height="48" onerror="this.style.display='none'">
+          </picture>
         </div>
         <div class="topbar-info">
           <h1>Pemerintah Provinsi Jawa Timur</h1>
@@ -130,13 +134,12 @@
         <span>&copy; <?= date('Y') ?> Dinas Tenaga Kerja Provinsi Jawa Timur.</span>
       </div>
       <div class="app-footer-right">
-        <span><i class="bi bi-info-circle"></i> PPID v1.0</span>
+
         <span><i class="bi bi-calendar3"></i> <?= date('d M Y') ?></span>
       </div>
     </footer>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <div class="toast-container" id="toastContainer"></div>
   <script>
     const CSRF_TOKEN_NAME = '<?= csrf_token() ?>';

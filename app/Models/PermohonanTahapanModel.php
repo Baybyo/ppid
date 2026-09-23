@@ -29,6 +29,11 @@ class PermohonanTahapanModel extends Model
 
     public function initTahapan(int $permohonanId): void
     {
+        $existing = $this->where('permohonan_id', $permohonanId)->countAllResults();
+        if ($existing > 0) {
+            return;
+        }
+
         $tahapan = [
             ['tahap' => 'Diterima',  'urutan' => 1],
             ['tahap' => 'Verifikasi', 'urutan' => 2],

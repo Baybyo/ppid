@@ -67,12 +67,13 @@ class Profil extends BaseController
         $adminId = session()->get('adminId');
         $rules = [
             'password_lama' => 'required',
-            'password_baru' => 'required|min_length[6]',
+            'password_baru' => 'required|min_length[8]|regex_match[/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/]',
             'konfirmasi_password' => 'required|matches[password_baru]',
         ];
 
         if (! $this->validate($rules)) {
-            return redirect()->back()->withInput()->with('error', 'Gagal mengganti password.');
+            $errors = implode(' ', $this->validator->getErrors());
+            return redirect()->back()->withInput()->with('error', 'Gagal mengganti password: ' . $errors);
         }
 
         $admin = $this->adminModel->find($adminId);

@@ -47,7 +47,7 @@ class PermohonanModel extends Model
                      ->findAll();
     }
 
-    public function listForAdmin(array $filters = [], ?int $limit = null): array
+    public function listForAdmin(array $filters = []): array
     {
         $builder = $this->builder();
         $builder->where('status !=', 0);
@@ -70,17 +70,20 @@ class PermohonanModel extends Model
             $builder->where('submitted_at <=', $filters['sampai'] . ' 23:59:59');
         }
 
-        $builder->orderBy('submitted_at', 'DESC');
-        if ($limit !== null) {
-            $builder->limit($limit);
-        }
-
-        return $builder->get()->getResultArray();
+        return $builder->orderBy('submitted_at', 'DESC')->get()->getResultArray();
     }
 
     public function detailForAdmin(int $id): ?array
     {
         return $this->find($id);
+    }
+
+    public function recentForAdmin(int $limit = 10): array
+    {
+        return $this->where('status !=', 0)
+                     ->orderBy('submitted_at', 'DESC')
+                     ->limit($limit)
+                     ->findAll();
     }
 
     public function statusCounts(): array

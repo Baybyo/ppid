@@ -59,4 +59,60 @@ class Masyarakat extends BaseController
             'user'        => $user,
         ]);
     }
+
+    public function update(int $id)
+    {
+        $user = $this->masyarakatModel->find($id);
+        if (!$user) {
+            return redirect()->to(site_url('admin/masyarakat'))->with('error', 'Data tidak ditemukan.');
+        }
+
+        $rules = [
+            'nama'  => 'required|min_length[3]',
+            'no_hp' => 'required|is_unique[masyarakat.no_hp,id,' . $id . ']',
+            'email' => 'permit_empty|valid_email|is_unique[masyarakat.email,id,' . $id . ']',
+        ];
+
+        $passBaru = $this->request->getPost('password_baru');
+        if (!empty($passBaru)) {
+            $rules['password_baru'] = 'min_length[8]|regex_match[/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/]';
+            $rules['konfirmasi_password'] = 'required|matches[password_baru]';
+        }
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()->withInput()->with('error', implode('<br>', $this->validator->getErrors()));
+        }
+
+        $data = [
+            'nama'  => trim($this->request->getPost('nama')),
+            'no_hp' => trim($this->request->getPost('no_hp')),
+            'email' => trim($this->request->getPost('email')) ?: null,
+            'nisn'  => trim($this->request->getPost('nisn')) ?: null,
+            'is_active' => (int) $this->request->getPost('is_active'),
+        ];
+
+        if (!empty($passBaru)) {
+            $data['password'] = password_hash($passBaru, PASSWORD_DEFAULT);
+        }
+
+        $this->masyarakatModel->update($id, $data);
+
+        return redirect()->to(site_url('admin/masyarakat/detail/' . $id))->with('success', 'Data akun berhasil diperbarui.');
+    }
+
+    public function delete(int $id)
+    {
+        $user = $this->masyarakatModel->find($id);
+        if (!$user) {
+            return redirect()->to(site_url('admin/masyarakat'))->with('error', 'Data tidak ditemukan.');
+        }
+
+        // Nullify masyarakat_id in permohonan table to maintain archive records without foreign key crash
+        $db = \Config\Database::connect();
+        $db->table('permohonan')->where('masyarakat_id', $id)->update(['masyarakat_id' => null]);
+
+        $this->masyarakatModel->delete($id);
+
+        return redirect()->to(site_url('admin/masyarakat'))->with('success', 'Akun masyarakat berhasil dihapus.');
+    }
 }

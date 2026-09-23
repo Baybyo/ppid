@@ -174,8 +174,9 @@ foreach ($tahapan as $t) {
               <textarea name="alasan_penolakan" id="alasanInput" rows="3" class="form-control" placeholder="Wajib diisi jika menolak"></textarea>
             </div>
             <div class="form-group">
-              <label class="form-label">Catatan (opsional)</label>
-              <textarea name="keterangan" rows="2" class="form-control" placeholder="Catatan internal"></textarea>
+              <label class="form-label">Keterangan / Catatan Internal Admin (opsional)</label>
+              <textarea name="keterangan" rows="2" class="form-control" placeholder="Hanya terlihat oleh tim admin internal"></textarea>
+              <div class="form-hint">Catatan ini tersimpan di riwayat aktivitas internal dan tidak ditampilkan ke pemohon.</div>
             </div>
             <button type="submit" class="btn btn-primary" style="width:100%;"><i class="bi bi-check-lg"></i> Simpan Status</button>
           </form>
@@ -185,7 +186,7 @@ foreach ($tahapan as $t) {
       <div class="alert alert-info"><i class="bi bi-info-circle-fill"></i><span>Status final. Tidak dapat diubah.</span></div>
     <?php endif; ?>
 
-    <?php if ($st >= 2): ?>
+    <?php if ($st >= 2 && $st !== 4): ?>
     <div class="card" style="margin-bottom:1rem;">
       <div class="card-header"><h3><i class="bi bi-upload" style="color:var(--blue-500);"></i> Upload Jawaban</h3></div>
       <div class="card-body">
@@ -254,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         const res = await fetch('<?= site_url("admin/permohonan/update-status/" . $row["id"]) ?>', {
           method: 'POST', body: fd,
+          credentials: 'same-origin',
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const j = await res.json();
@@ -286,6 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
       try {
         const res = await fetch('<?= site_url("admin/permohonan/upload-jawaban/" . $row["id"]) ?>', {
           method: 'POST', body: fd,
+          credentials: 'same-origin',
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const j = await res.json();

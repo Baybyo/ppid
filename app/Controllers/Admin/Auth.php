@@ -54,7 +54,9 @@ class Auth extends BaseController
 
     public function logout()
     {
-        session()->remove(['isAdminLoggedIn', 'adminId', 'adminUsername', 'adminNama']);
+        $session = session();
+        $session->destroy();
+        setcookie(session_name(), '', 0, '/');
 
         return redirect()->to(site_url('admin/login'))->with('success', 'Anda telah keluar.');
     }

@@ -35,7 +35,8 @@
           <div class="col-md-3">
             <div class="form-group">
               <label class="form-label">No. Identitas <span class="req">*</span></label>
-              <input type="text" name="no_identitas" class="form-control" value="<?= $val('no_identitas') ?>" required>
+              <input type="text" name="no_identitas" id="noIdentitas" class="form-control" value="<?= $val('no_identitas', $user['nisn'] ?? '') ?>" placeholder="KTP 16 digit / SIM/Paspor 8-20" required>
+              <div class="form-hint" id="identitasHint">KTP wajib 16 digit angka.</div>
             </div>
           </div>
           <div class="col-md-4">
@@ -124,7 +125,7 @@
         <div class="row g-3">
           <div class="col-12">
             <div class="form-group">
-              <label class="form-label">Upload Identitas (KTP/SIM/Paspor) <span class="req">*</span></label>
+              <label class="form-label">Upload Surat Permohonan <span class="req">*</span></label>
               <input type="file" name="file_identitas" id="fileIdentitas" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
               <div class="form-hint">Format: JPG, JPEG, PNG, atau PDF. Maksimal 10MB.</div>
               <div id="fileInfo" class="mt-1" style="font-size:.8rem;color:var(--n-400);"></div>
@@ -176,6 +177,32 @@
     }
   });
 
+  const formPermohonan = document.getElementById('formPermohonan');
+  const jenisSelect = formPermohonan.querySelector('[name="jenis_identitas"]');
+  const noIdentitasInput = document.getElementById('noIdentitas');
+  const identitasHint = document.getElementById('identitasHint');
+
+  const updateIdentitasFormat = () => {
+    const isKtp = jenisSelect.value === 'KTP';
+    if(isKtp) {
+      noIdentitasInput.setAttribute('maxlength', '16');
+      noIdentitasInput.setAttribute('inputmode', 'numeric');
+      identitasHint.textContent = 'KTP wajib tepat 16 digit angka.';
+    } else {
+      noIdentitasInput.setAttribute('maxlength', '20');
+      noIdentitasInput.removeAttribute('inputmode');
+      identitasHint.textContent = 'SIM / Paspor 8 - 20 karakter alfanumerik.';
+    }
+  };
+  jenisSelect.addEventListener('change', updateIdentitasFormat);
+  updateIdentitasFormat();
+
+  noIdentitasInput.addEventListener('input', () => {
+    if(jenisSelect.value === 'KTP') {
+      noIdentitasInput.value = noIdentitasInput.value.replace(/\D/g, '').slice(0, 16);
+    }
+  });
+
   document.getElementById('btnDraft').addEventListener('click', async () => {
     const f = document.getElementById('formPermohonan');
     const fd = new FormData(f);
@@ -189,11 +216,15 @@
     try {
       const res = await fetch('<?= site_url("permohonan/store-draft") ?>', {
         method: 'POST', body: fd,
+        credentials: 'same-origin',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       });
       const j = await res.json();
       if(j.status) {
         document.getElementById('draftId').value = j.draft_id;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('id', j.draft_id);
+        window.history.replaceState({}, '', currentUrl.toString());
         showToast('Draft berhasil tersimpan!');
       } else {
         showToast(j.message || 'Gagal menyimpan draft', 'error');
@@ -255,6 +286,7 @@
     try {
       const res = await fetch(form.action, {
         method: 'POST', body: fd,
+        credentials: 'same-origin',
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       });
       const j = await res.json();

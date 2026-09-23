@@ -14,7 +14,7 @@ class Dashboard extends BaseController
         $masyarakatModel = new MasyarakatModel();
 
         $stats  = $permohonanModel->statusCounts();
-        $recent = $permohonanModel->listForAdmin([], 10);
+        $recent = $permohonanModel->recentForAdmin(10);
 
         $stats['totalMasyarakat'] = $masyarakatModel->countAllResults();
 

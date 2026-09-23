@@ -73,32 +73,35 @@
       <div class="profile-section">
         <div class="section-header">
           <h4><i class="bi bi-shield-lock"></i> Ganti Password</h4>
-          <p>Gunakan minimal 6 karakter untuk keamanan akun</p>
+          <p>Min 8 karakter, wajib ada huruf besar, huruf kecil & angka</p>
         </div>
         <form action="<?= site_url('admin/profil/change-password') ?>" method="post" class="profile-form">
           <?= csrf_field() ?>
           <div class="form-row">
             <div class="form-group">
               <label for="password_lama">Password Saat Ini <span class="required">*</span></label>
-              <div class="input-icon">
-                <i class="bi bi-lock"></i>
-                <input type="password" name="password_lama" id="password_lama" required placeholder="Masukkan password saat ini">
+              <div class="input-password-wrapper">
+                <i class="bi bi-lock" style="position: absolute; left: .75rem; color: var(--n-400); z-index: 2;"></i>
+                <input type="password" name="password_lama" id="password_lama" class="form-control" required placeholder="Masukkan password saat ini" style="padding-left: 2.25rem;">
+                <button type="button" class="btn-toggle-pwd" onclick="togglePassword('password_lama', this)"><i class="bi bi-eye"></i></button>
               </div>
             </div>
           </div>
           <div class="form-row form-row-2">
             <div class="form-group">
               <label for="password_baru">Password Baru <span class="required">*</span></label>
-              <div class="input-icon">
-                <i class="bi bi-lock-fill"></i>
-                <input type="password" name="password_baru" id="password_baru" required minlength="6" placeholder="Minimal 6 karakter">
+              <div class="input-password-wrapper">
+                <i class="bi bi-lock-fill" style="position: absolute; left: .75rem; color: var(--n-400); z-index: 2;"></i>
+                <input type="password" name="password_baru" id="password_baru" class="form-control" required minlength="8" placeholder="Minimal 8 karakter (Aa1)" style="padding-left: 2.25rem;">
+                <button type="button" class="btn-toggle-pwd" onclick="togglePassword('password_baru', this)"><i class="bi bi-eye"></i></button>
               </div>
             </div>
             <div class="form-group">
               <label for="konfirmasi_password">Konfirmasi Password <span class="required">*</span></label>
-              <div class="input-icon">
-                <i class="bi bi-lock-fill"></i>
-                <input type="password" name="konfirmasi_password" id="konfirmasi_password" required minlength="6" placeholder="Ulangi password baru">
+              <div class="input-password-wrapper">
+                <i class="bi bi-lock-fill" style="position: absolute; left: .75rem; color: var(--n-400); z-index: 2;"></i>
+                <input type="password" name="konfirmasi_password" id="konfirmasi_password" class="form-control" required minlength="8" placeholder="Ulangi password baru" style="padding-left: 2.25rem;">
+                <button type="button" class="btn-toggle-pwd" onclick="togglePassword('konfirmasi_password', this)"><i class="bi bi-eye"></i></button>
               </div>
             </div>
           </div>
@@ -158,6 +161,19 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
   document.getElementById(`tab-${tab}`).classList.add('active');
+}
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const icon = btn.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('bi-eye');
+    icon.classList.add('bi-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('bi-eye-slash');
+    icon.classList.add('bi-eye');
+  }
 }
 </script>
 <?= $this->endSection() ?>

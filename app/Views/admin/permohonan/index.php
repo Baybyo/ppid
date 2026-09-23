@@ -80,9 +80,6 @@ $badgeClass = [0=>'badge-draft',1=>'badge-menunggu',2=>'badge-proses',3=>'badge-
             </td>
           </tr>
         <?php endforeach; ?>
-        <?php if (empty($list)): ?>
-          <tr><td colspan="7" class="empty-state">Tidak ada data permohonan.</td></tr>
-        <?php endif; ?>
       </tbody>
     </table>
   </div>
@@ -96,7 +93,8 @@ $(function() {
   $('#tablePermohonan').DataTable(
     $.extend({}, DATATABLE_DEFAULTS, {
       order: [],
-      columnDefs: [{ orderable: false, targets: [6] }]
+      columnDefs: [{ orderable: false, targets: [6] }],
+      language: { emptyTable: 'Tidak ada data permohonan.' }
     })
   );
 });

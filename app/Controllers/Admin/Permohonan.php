@@ -173,6 +173,10 @@ class Permohonan extends BaseController
             return $this->response->setJSON(['status' => false, 'message' => 'Data tidak ditemukan'])->setStatusCode(404);
         }
 
+        if ((int)$row['status'] === 4) {
+            return $this->response->setJSON(['status' => false, 'message' => 'Permohonan ditolak. Tidak dapat mengunggah file jawaban.'])->setStatusCode(403);
+        }
+
         $file = $this->request->getFile('file_jawaban');
         if (!$file || !$file->isValid()) {
             return $this->response->setJSON(['status' => false, 'message' => 'File jawaban wajib.'])->setStatusCode(422);
@@ -223,6 +227,20 @@ class Permohonan extends BaseController
 
         if ((int) $row['status'] !== 0) {
             return redirect()->to(site_url('admin/permohonan'))->with('error', 'Hanya draft yang bisa dihapus.');
+        }
+
+        $lampiranList = $this->lampiranModel->getByPermohonan($id);
+        foreach ($lampiranList as $lamp) {
+            $path = FCPATH . $lamp['path_file'];
+            if (!empty($lamp['path_file']) && file_exists($path)) {
+                unlink($path);
+            }
+        }
+        if (!empty($row['file_identitas'])) {
+            $path = FCPATH . $row['file_identitas'];
+            if (file_exists($path)) {
+                unlink($path);
+            }
         }
 
         $this->permohonanModel->delete($id);

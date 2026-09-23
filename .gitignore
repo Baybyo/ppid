@@ -36,23 +36,27 @@ $RECYCLE.BIN/
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
 
-# Uploaded files
-public/uploads/*
-!public/uploads/.gitkeep
-!public/uploads/permohonan/.htaccess
-
-# Database dumps
-*.sql
-ppid_disnakertrans.sql
-
 #-------------------------
 # Environment Files
 #-------------------------
 # These should never be under version control,
 # as it poses a security risk.
 .env
+.env.*
+!.env.example
 .vagrant
 Vagrantfile
+
+#-------------------------
+# Uploaded & Sensitive Dumps
+#-------------------------
+public/uploads/*
+!public/uploads/.gitkeep
+!public/uploads/.htaccess
+!public/uploads/permohonan/.htaccess
+*.sql
+*.sqlite
+*.db
 
 #-------------------------
 # Temporary Files

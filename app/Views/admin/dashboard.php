@@ -95,14 +95,16 @@
 <?= $this->section('scripts') ?>
 <script>
 $(function() {
-  $('#tableDashboard').DataTable(
-    $.extend({}, DATATABLE_DEFAULTS, {
-      order: [],
-      paging: false,
-      searching: false,
-      info: false
-    })
-  );
+  if ($('#tableDashboard tbody tr').length > 0 && !$('#tableDashboard .empty-state').length) {
+    $('#tableDashboard').DataTable(
+      $.extend({}, DATATABLE_DEFAULTS, {
+        order: [],
+        paging: false,
+        searching: false,
+        info: false
+      })
+    );
+  }
 });
 </script>
 <?= $this->endSection() ?>

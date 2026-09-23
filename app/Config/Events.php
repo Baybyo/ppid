@@ -24,6 +24,15 @@ use CodeIgniter\HotReloader\HotReloader;
  */
 
 Events::on('pre_system', static function (): void {
+    $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+    if (str_contains($host, ':8080') || ($_SERVER['SERVER_PORT'] ?? '') === '8080') {
+        config('App')->baseURL = "{$scheme}://{$host}/";
+    } else {
+        config('App')->baseURL = "{$scheme}://{$host}/ppid/public/";
+    }
+
     if (ENVIRONMENT !== 'testing') {
         $value = ini_get('zlib.output_compression');
 

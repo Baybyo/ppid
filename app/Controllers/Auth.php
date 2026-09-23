@@ -37,11 +37,18 @@ class Auth extends BaseController
      */
     public function doRegister()
     {
+        $ip = $this->request->getIPAddress();
+        $regKey = 'register_attempts_' . md5($ip);
+        $regAttempts = cache()->get($regKey) ?? 0;
+        if ($regAttempts >= 5) {
+            return redirect()->back()->withInput()->with('error', 'Terlalu banyak percobaan registrasi. Silakan coba lagi dalam 15 menit.');
+        }
+
         $rules = [
             'nama'                 => 'required|min_length[3]',
             'no_hp'                => 'required|is_unique[masyarakat.no_hp]',
             'email'                => 'permit_empty|valid_email|is_unique[masyarakat.email]',
-            'password'             => 'required|min_length[6]',
+            'password'             => 'required|min_length[8]|regex_match[/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/]',
             'konfirmasi_password'  => 'required|matches[password]',
         ];
 
@@ -60,6 +67,8 @@ class Auth extends BaseController
             'is_active' => 1,
         ]);
 
+        cache()->save($regKey, $regAttempts + 1, 900);
+
         return redirect()->to(site_url('login'))->with('success', 'Akun berhasil dibuat. Silakan masuk.');
     }
 
@@ -72,7 +81,12 @@ class Auth extends BaseController
             return redirect()->to(site_url('/'));
         }
 
-        return view('auth/login', ['title' => 'Masuk']);
+        $redirectTo = $this->request->getGet('redirect');
+
+        return view('auth/login', [
+            'title'      => 'Masuk',
+            'redirectTo' => $redirectTo,
+        ]);
     }
 
     /**
@@ -86,7 +100,12 @@ class Auth extends BaseController
         ];
 
         if (! $this->validate($rules)) {
-            return view('auth/login', ['title' => 'Masuk', 'validation' => $this->validator]);
+            $redirectTo = $this->request->getPost('redirect_to');
+            return view('auth/login', [
+                'title'      => 'Masuk',
+                'validation' => $this->validator,
+                'redirectTo' => $redirectTo,
+            ]);
         }
 
         $noHp     = trim($this->request->getPost('no_hp'));
@@ -126,7 +145,9 @@ class Auth extends BaseController
      */
     public function logout()
     {
-        session()->remove(['isMasyarakatLoggedIn', 'masyarakatId', 'masyarakatNama', 'masyarakatEmail', 'masyarakatNoHp']);
+        $session = session();
+        $session->destroy();
+        setcookie(session_name(), '', 0, '/');
 
         return redirect()->to(site_url('/'))->with('success', 'Anda telah keluar.');
     }
