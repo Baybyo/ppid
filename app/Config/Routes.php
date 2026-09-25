@@ -41,6 +41,7 @@ $routes->group('admin', ['filter' => 'adminAuth'], static function (RouteCollect
         $routes->get('export', 'Admin\Permohonan::export');
         $routes->get('detail/(:num)', 'Admin\Permohonan::detail/$1');
         $routes->post('update-status/(:num)', 'Admin\Permohonan::updateStatus/$1');
+        $routes->post('kirim-pesan/(:num)', 'Admin\Permohonan::kirimPesan/$1');
         $routes->post('upload-jawaban/(:num)', 'Admin\Permohonan::uploadJawaban/$1');
         $routes->post('delete/(:num)', 'Admin\Permohonan::delete/$1');
     });

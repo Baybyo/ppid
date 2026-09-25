@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.0') ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.3') ?>">
 </head>
 <body>
 
@@ -16,13 +16,6 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-logo">
-        <picture>
-          <source srcset="<?= base_url('assets/images/logo-jatim.webp') ?>" type="image/webp">
-          <img src="<?= base_url('assets/images/logo-jatim.png') ?>" alt="Logo Jatim" width="38" height="53" onerror="this.style.display='none';this.parentElement.nextElementSibling.style.display='flex'">
-        </picture>
-        <div class="brand-fallback" style="display:none;"><i class="bi bi-shield-lock-fill"></i></div>
-      </div>
       <div class="brand-text">
         <div class="brand-title">PPID</div>
         <div class="brand-sub">Dinas Tenaga Kerja<br>Provinsi Jawa Timur</div>
@@ -130,7 +123,6 @@
 
     <footer class="app-footer">
       <div class="app-footer-left">
-        <i class="bi bi-shield-lock-fill"></i>
         <span>&copy; <?= date('Y') ?> Dinas Tenaga Kerja Provinsi Jawa Timur.</span>
       </div>
       <div class="app-footer-right">

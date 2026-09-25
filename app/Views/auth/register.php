@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.0') ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.3') ?>">
 </head>
 <body>
   <div class="login-page">

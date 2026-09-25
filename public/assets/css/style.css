@@ -99,19 +99,21 @@ a:hover { color: var(--blue-700); }
 }
 
 .sidebar-brand .brand-logo {
-  width: 40px;
-  height: 40px;
+  width: auto;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .sidebar-brand .brand-logo img {
-  width: 100%;
+  width: auto;
   height: 100%;
+  max-width: none;
   object-fit: contain;
+  display: block;
 }
 
 .sidebar-brand .brand-logo .brand-fallback {
@@ -229,19 +231,28 @@ a:hover { color: var(--blue-700); }
 }
 
 .topbar-logo {
-  width: 40px;
-  height: 40px;
+  width: auto;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.topbar-logo picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .topbar-logo img {
-  width: 100%;
+  width: auto;
   height: 100%;
+  max-width: none;
   object-fit: contain;
+  display: block;
 }
 
 .topbar-info h1 {
@@ -1316,24 +1327,33 @@ table.dataTable thead th {
 }
 
 .login-brand {
-  width: 60px;
-  height: 60px;
+  width: auto;
+  height: 68px;
   margin: 0 auto .85rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.login-brand picture {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .login-brand img {
-  width: 100%;
+  width: auto;
   height: 100%;
+  max-width: none;
   object-fit: contain;
+  display: block;
 }
 
 .login-brand-fallback {
-  width: 100%;
-  height: 100%;
+  width: 48px;
+  height: 68px;
   background: var(--blue-600);
   border-radius: 14px;
   display: flex;
@@ -1515,8 +1535,8 @@ table.dataTable thead th {
     flex: 1;
   }
   .topbar-logo {
-    width: 28px;
-    height: 38px;
+    width: auto;
+    height: 36px;
   }
   .topbar-info {
     min-width: 0;
@@ -1562,5 +1582,313 @@ table.dataTable thead th {
   }
   .topbar-info h1 {
     font-size: .78rem;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+    PROGRES PERMOHONAN — DETAIL PAGE RIWAYAT
+    ══════════════════════════════════════════════════════════ */
+
+.progres-header {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  margin-bottom: 1rem;
+}
+
+.progres-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--blue-600), var(--blue-400));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(29,79,148,.25);
+}
+
+.progres-title {
+  font-size: .95rem;
+  font-weight: 800;
+  color: var(--n-800);
+  line-height: 1.3;
+}
+
+.progres-no {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  font-size: .82rem;
+  font-weight: 700;
+  color: var(--blue-600);
+  letter-spacing: .02em;
+  margin-top: .1rem;
+}
+
+.progres-desc {
+  font-size: .78rem;
+  color: var(--n-400);
+  margin-top: .2rem;
+  line-height: 1.4;
+}
+
+.progres-divider {
+  height: 1px;
+  background: var(--n-100);
+  margin-bottom: 1.25rem;
+}
+
+.progres-footer {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-top: 1.25rem;
+  padding-top: .9rem;
+  border-top: 1px solid var(--n-100);
+  font-size: .76rem;
+  color: var(--n-400);
+}
+
+.progres-footer i {
+  color: var(--blue-400);
+  font-size: .85rem;
+}
+
+.progres-footer strong {
+  color: var(--n-600);
+  font-weight: 600;
+}
+
+/* ── Stepper ── */
+
+.stepper {
+  position: relative;
+  padding: .25rem 0;
+}
+
+.stepper-item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1.75rem;
+}
+
+.stepper-item:last-child {
+  padding-bottom: 0;
+}
+
+.stepper-line {
+  position: absolute;
+  left: 13px;
+  top: 32px;
+  bottom: 0;
+  width: 2px;
+  z-index: 0;
+}
+
+.stepper-line-done {
+  background: #16a34a;
+}
+
+.stepper-line-pending {
+  background: none;
+  border-left: 2px dashed #d1d5db;
+}
+
+.stepper-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: all .2s ease;
+}
+
+/* Done: hijau solid + checkmark */
+.stepper-done .stepper-dot {
+  background: #16a34a;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(22,163,74,.15);
+}
+
+.stepper-done .stepper-dot i {
+  font-size: .9rem;
+  font-weight: 700;
+}
+
+/* Active: lingkaran biru outline + titik biru dalam */
+.stepper-active .stepper-dot {
+  background: #fff;
+  border: 2.5px solid #2563b5;
+  box-shadow: 0 0 0 4px rgba(37,99,181,.12);
+}
+
+.stepper-dot-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2563b5;
+}
+
+/* Rejected: lingkaran merah + X */
+.stepper-rejected .stepper-dot {
+  background: #dc2626;
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(220,38,38,.15);
+}
+
+.stepper-rejected .stepper-dot i {
+  font-size: .8rem;
+  font-weight: 700;
+}
+
+/* Pending: lingkaran abu-abu outline kosong */
+.stepper-pending .stepper-dot {
+  background: #fff;
+  border: 2.5px solid #d1d5db;
+}
+
+.stepper-content {
+  flex: 1;
+  padding-top: .2rem;
+  min-width: 0;
+}
+
+.stepper-title-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.stepper-title {
+  font-weight: 700;
+  font-size: .82rem;
+  color: var(--n-800);
+}
+
+.stepper-done .stepper-title {
+  color: #16a34a;
+}
+
+.stepper-active .stepper-title {
+  color: #2563b5;
+}
+
+.stepper-rejected .stepper-title {
+  color: #dc2626;
+}
+
+.stepper-pending .stepper-title {
+  color: var(--n-400);
+}
+
+/* Badge "Tahap saat ini" */
+.stepper-badge-active {
+  display: inline-flex;
+  align-items: center;
+  padding: .15rem .5rem;
+  border-radius: 5px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+/* Badge "Ditolak" */
+.stepper-badge-rejected {
+  display: inline-flex;
+  align-items: center;
+  padding: .15rem .5rem;
+  border-radius: 5px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+.stepper-meta {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin-top: .2rem;
+  font-size: .75rem;
+  color: var(--n-400);
+}
+
+.stepper-meta i {
+  font-size: .7rem;
+}
+
+.stepper-pending-text {
+  color: var(--n-300);
+  font-style: italic;
+}
+
+.stepper-reject-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  margin-top: 1.25rem;
+  padding: .75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: .82rem;
+  color: #991b1b;
+}
+
+.stepper-reject-note i {
+  color: #dc2626;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: .1rem;
+}
+
+.stepper-reject-note strong {
+  display: block;
+  font-size: .8rem;
+}
+
+.stepper-reject-note p {
+  margin: .15rem 0 0;
+  font-size: .78rem;
+  color: #b91c1c;
+}
+
+@media (max-width: 576px) {
+  .stepper-item {
+    gap: .75rem;
+    padding-bottom: 1.5rem;
+  }
+  .stepper-dot {
+    width: 24px;
+    height: 24px;
+  }
+  .stepper-line {
+    left: 11px;
+    top: 28px;
+  }
+  .stepper-title {
+    font-size: .78rem;
+  }
+  .progres-header {
+    gap: .6rem;
+  }
+  .progres-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
   }
 }

@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=6.0') ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.3') ?>">
   <style>
     body { background: var(--n-100); padding: 1.5rem; }
     .print-container { max-width: 680px; margin: 0 auto; }

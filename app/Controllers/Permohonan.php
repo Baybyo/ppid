@@ -6,6 +6,7 @@ use App\Models\PermohonanModel;
 use App\Models\PermohonanLampiranModel;
 use App\Models\PermohonanTahapanModel;
 use App\Models\PermohonanLogModel;
+use App\Models\PermohonanPesanModel;
 use App\Models\MasyarakatModel;
 
 class Permohonan extends BaseController
@@ -14,6 +15,7 @@ class Permohonan extends BaseController
     protected PermohonanLampiranModel $lampiranModel;
     protected PermohonanTahapanModel $tahapanModel;
     protected PermohonanLogModel $logModel;
+    protected PermohonanPesanModel $pesanModel;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class Permohonan extends BaseController
         $this->lampiranModel   = new PermohonanLampiranModel();
         $this->tahapanModel    = new PermohonanTahapanModel();
         $this->logModel        = new PermohonanLogModel();
+        $this->pesanModel      = new PermohonanPesanModel();
     }
 
     private function requireLogin(): ?\CodeIgniter\HTTP\RedirectResponse
@@ -399,8 +402,10 @@ class Permohonan extends BaseController
         $list = $this->permohonanModel->forMasyarakat(session()->get('masyarakatId'));
 
         return view('permohonan/riwayat', [
-            'title' => 'Riwayat Permohonan',
-            'list'  => $list,
+            'title'    => 'Riwayat Permohonan',
+            'list'     => $list,
+            'unread'   => $this->pesanModel->unreadPerPermohonan((int) session()->get('masyarakatId')),
+            'totalUnread' => $this->pesanModel->countUnreadForMasyarakat((int) session()->get('masyarakatId')),
         ]);
     }
 
@@ -416,12 +421,19 @@ class Permohonan extends BaseController
 
         $logs     = $this->logModel->getByPermohonan($id);
         $lampiran = $this->lampiranModel->getByPermohonan($id);
+        $tahapan  = $this->tahapanModel->getByPermohonan($id);
+        $pesan    = $this->pesanModel->getByPermohonan($id);
+
+        // Buka halaman detail = pesan dianggap dibaca
+        $this->pesanModel->tandaiDibaca($id);
 
         return view('permohonan/detail', [
             'title'    => 'Detail Permohonan',
             'row'      => $row,
             'logs'     => $logs,
             'lampiran' => $lampiran,
+            'tahapan'  => $tahapan,
+            'pesan'    => $pesan,
         ]);
     }
     // ─── CETAK BUKTI ────────────────────────────────────

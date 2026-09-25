@@ -7,6 +7,7 @@ use App\Models\PermohonanModel;
 use App\Models\PermohonanLampiranModel;
 use App\Models\PermohonanTahapanModel;
 use App\Models\PermohonanLogModel;
+use App\Models\PermohonanPesanModel;
 
 class Permohonan extends BaseController
 {
@@ -14,6 +15,7 @@ class Permohonan extends BaseController
     protected PermohonanLampiranModel $lampiranModel;
     protected PermohonanTahapanModel $tahapanModel;
     protected PermohonanLogModel $logModel;
+    protected PermohonanPesanModel $pesanModel;
 
     public function __construct()
     {
@@ -21,6 +23,7 @@ class Permohonan extends BaseController
         $this->lampiranModel   = new PermohonanLampiranModel();
         $this->tahapanModel    = new PermohonanTahapanModel();
         $this->logModel        = new PermohonanLogModel();
+        $this->pesanModel      = new PermohonanPesanModel();
     }
 
     public function index()
@@ -62,6 +65,17 @@ class Permohonan extends BaseController
         $lampiran  = $this->lampiranModel->getByPermohonan($id);
         $tahapan   = $this->tahapanModel->getByPermohonan($id);
 
+        // Nama admin pelaku (untuk riwayat log lebih informatif)
+        $adminModel = new \App\Models\AdminModel();
+        $adminNames = [];
+        foreach ($logs as $l) {
+            $aid = (int) ($l['admin_id'] ?? 0);
+            if ($aid > 0 && !isset($adminNames[$aid])) {
+                $a = $adminModel->find($aid);
+                $adminNames[$aid] = $a['nama'] ?? ('Admin #' . $aid);
+            }
+        }
+
         $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $this->response->setHeader('Pragma', 'no-cache');
 
@@ -74,6 +88,12 @@ class Permohonan extends BaseController
             'logs'        => $logs,
             'lampiran'    => $lampiran,
             'tahapan'     => $tahapan,
+            'pesan'       => $this->pesanModel->getByPermohonan($id),
+            'adminNames'  => $adminNames,
+            'sisaKerja'   => $this->permohonanModel->sisaHariKerja($row['sla_deadline'] ?? null),
+            'totalKerja'  => $this->permohonanModel->totalHariKerja($row['submitted_at'] ?? null, $row['sla_deadline'] ?? null),
+            'usedKerja'   => max((int) ($this->permohonanModel->totalHariKerja($row['submitted_at'] ?? null, $row['sla_deadline'] ?? null) ?? 0)
+                                 - $this->permohonanModel->sisaHariKerja($row['sla_deadline'] ?? null), 0),
         ]);
     }
 
@@ -135,9 +155,75 @@ class Permohonan extends BaseController
             (string) $to
         );
 
+        // Saat menolak: kirim catatan alasan penolakan ke pemohon
+        if ($to === 4 && $alasan !== '') {
+            $noReg = $row['no_registrasi'] ?? ('Draft #' . $id);
+            $this->pesanModel->kirim(
+                $id,
+                session()->get('adminId') ? (int) session()->get('adminId') : null,
+                'penolakan',
+                'Permohonan Ditolak - ' . $noReg,
+                "Yth. " . ($row['nama_pemohon'] ?? 'Pemohon') . ",\n\n"
+                . "Permohonan Anda dengan nomor registrasi " . $noReg . " telah DITOLAK.\n\n"
+                . "Alasan penolakan:\n" . $alasan . "\n\n"
+                . "Demikian pemberitahuan ini. Terima kasih."
+            );
+
+            $this->logModel->logTransition(
+                $id,
+                session()->get('adminId'),
+                'Catatan alasan penolakan dikirim ke pemohon',
+                null,
+                null
+            );
+        }
+
         return $this->response->setJSON([
             'status'  => true,
-            'message' => 'Status berhasil diperbarui.',
+            'message' => $to === 4
+                ? 'Status diperbarui. Alasan penolakan telah dikirim ke pemohon.'
+                : 'Status berhasil diperbarui.',
+        ]);
+    }
+
+    /** Kirim pesan manual dari admin ke pemohon (mis. klarifikasi / alasan penolakan). */
+    public function kirimPesan(int $id)
+    {
+        $row = $this->permohonanModel->find($id);
+        if (!$row) {
+            return $this->response->setJSON(['status' => false, 'message' => 'Data tidak ditemukan'])->setStatusCode(404);
+        }
+
+        $judul = trim((string) $this->request->getPost('judul'));
+        $isi   = trim((string) $this->request->getPost('isi'));
+        $tipe  = $this->request->getPost('tipe') === 'penolakan' ? 'penolakan' : 'umum';
+
+        if ($judul === '' || $isi === '') {
+            return $this->response->setJSON(['status' => false, 'message' => 'Judul dan isi pesan wajib diisi.'])->setStatusCode(422);
+        }
+        if (mb_strlen($judul) > 150) {
+            return $this->response->setJSON(['status' => false, 'message' => 'Judul pesan maksimal 150 karakter.'])->setStatusCode(422);
+        }
+
+        $this->pesanModel->kirim(
+            $id,
+            session()->get('adminId') ? (int) session()->get('adminId') : null,
+            $tipe,
+            $judul,
+            $isi
+        );
+
+        $this->logModel->logTransition(
+            $id,
+            session()->get('adminId'),
+            'Pesan dikirim ke pemohon: ' . $judul,
+            null,
+            null
+        );
+
+        return $this->response->setJSON([
+            'status'  => true,
+            'message' => 'Pesan berhasil dikirim ke pemohon.',
         ]);
     }
 

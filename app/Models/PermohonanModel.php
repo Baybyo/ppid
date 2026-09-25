@@ -129,4 +129,50 @@ class PermohonanModel extends Model
 
         return ['deadline' => $deadline, 'deadline_ext' => $deadlineExt];
     }
+
+    /**
+     * Hitung sisa hari KERJA (Senin–Jumat) antara hari ini menuju deadline.
+     * Sabtu & Minggu otomatis tidak dihitung.
+     * Nilai negatif = sudah lewat deadline.
+     */
+    public function sisaHariKerja(?string $deadline): int
+    {
+        if (empty($deadline)) return 0;
+
+        $today = new \DateTime('today');
+        $end   = new \DateTime($deadline);
+
+        $sign = $end < $today ? -1 : 1;
+        $from = $sign > 0 ? clone $today : clone $end;
+        $to   = $sign > 0 ? $end : clone $today;
+
+        $count = 0;
+        $cursor = clone $from;
+        while ($cursor <= $to) {
+            if ((int) $cursor->format('N') < 6) $count++;
+            $cursor->modify('+1 day');
+        }
+
+        // Deadline hari ini = masih ada hari ini (1 hari kerja tersisa)
+        return $sign * max($count - ($sign > 0 ? 1 : 0), 0);
+    }
+
+    /**
+     * Total hari kerja yang dibutuhkan sejak kirim sampai deadline.
+     */
+    public function totalHariKerja(?string $submittedAt, ?string $deadline): ?int
+    {
+        if (empty($submittedAt) || empty($deadline)) return null;
+
+        $from = new \DateTime($submittedAt);
+        $to   = new \DateTime($deadline);
+
+        $count = 0;
+        $cursor = clone $from;
+        while ($cursor->format('Y-m-d') <= $to->format('Y-m-d')) {
+            if ((int) $cursor->format('N') < 6) $count++;
+            $cursor->modify('+1 day');
+        }
+        return max($count - 1, 0);
+    }
 }

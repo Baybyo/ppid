@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
-  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.0') ?>">
+  <link rel="stylesheet" href="<?= base_url('assets/css/style.css?v=9.3') ?>">
 </head>
 <body>
 
@@ -17,10 +17,6 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-logo">
-        <img src="<?= base_url('assets/images/logo-jatim.png') ?>" alt="Logo Jatim" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="brand-fallback" style="display:none;"><i class="bi bi-shield-lock-fill"></i></div>
-      </div>
       <div class="brand-text">
         <div class="brand-title">Admin PPID</div>
         <div class="brand-sub">PPID Dinas Tenaga Kerja<br>Provinsi Jawa Timur</div>
@@ -115,7 +111,6 @@
 
     <footer class="app-footer">
       <div class="app-footer-left">
-        <i class="bi bi-shield-lock-fill"></i>
         <span>&copy; <?= date('Y') ?> Dinas Tenaga Kerja Provinsi Jawa Timur.</span>
       </div>
       <div class="app-footer-right">
